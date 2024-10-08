@@ -1,10 +1,10 @@
-// CreateMeasurment.js
+// MeasurementUpdatePage.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import image from "../images/createmeasure.webp";
+import backgroundImage from "../images/measurement_background_update.webp"; // Adjust the path as necessary
 
-const CreateMeasurment = () => {
+const MeasurementUpdatePage = () => {
   const [userData, setUserData] = useState({
     username: "",
     neck: "",
@@ -22,10 +22,35 @@ const CreateMeasurment = () => {
     rise: "",
     bodylength: "",
   });
-  const [error, setError] = useState(""); 
+  const [originalData, setOriginalData] = useState(null); // Store original measurements
+  const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple submissions
+  const [username, setUserName] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchMeasurements = async () => {
+      const username = localStorage.getItem("username");
+      setUserName(username);
+      try {
+        const response = await axios.get(
+          "http://localhost:8000/api/users/measurements/view/",
+          {
+            params: { username },
+          }
+        );
+        setUserData(response.data);
+        setOriginalData(response.data); // Save original data for comparison
+      } catch (error) {
+        console.error("Error fetching measurements:", error);
+        setError("Unable to fetch measurements.");
+      }
+    };
+
+    fetchMeasurements();
+  }, []);
 
   const validateForm = () => {
     const requiredFields = ["neck", "chest", "waist", "hip", "shoulder"];
@@ -39,41 +64,32 @@ const CreateMeasurment = () => {
     return true;
   };
 
-  useEffect(() => {
-    const username = localStorage.getItem("username");
-    setUserData((prevData) => ({
-      ...prevData,
-      username: username,
-    }));
-  }, []);
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
+    setShowConfirmModal(true); // Show comparison modal before submitting
+  };
+
+  const handleConfirmSubmission = async () => {
+    if (isSubmitting) return; // Prevent double submission
+
+    const username = localStorage.getItem("username");
     try {
-      await axios.post("http://localhost:8000/api/users/measurements/new/", userData);
-      setSuccessMessage("Measurements saved successfully!");
-      setShowPreview(false);
-      setUserData({
-        username: localStorage.getItem("username"),
-        neck: "",
-        chest: "",
-        waist: "",
-        hip: "",
-        shoulder: "",
-        sleeve: "",
-        armhole: "",
-        bicep: "",
-        wrist: "",
-        inseam: "",
-        outseam: "",
-        thigh: "",
-        rise: "",
-        bodylength: "",
+      setIsSubmitting(true); // Disable form during submission
+      await axios.put("http://localhost:8000/api/users/measurements/update/", {
+        ...userData,
+        username,
       });
+      setSuccessMessage("Measurements updated successfully!");
+      setShowConfirmModal(false);
+      setTimeout(() => {
+        navigate("/measurements/view"); // Redirect after successful update
+      }, 2000);
     } catch (error) {
-      console.error("Error during measurement creation", error);
-      setError("Failed to save measurements. Please try again.");
+      console.error("Error updating measurements:", error);
+      setError("Failed to update measurements.");
+    } finally {
+      setIsSubmitting(false); // Re-enable form submission
     }
   };
 
@@ -84,32 +100,21 @@ const CreateMeasurment = () => {
     });
   };
 
-  const togglePreview = () => {
-    setShowPreview(!showPreview);
-  };
-
-  const closeModal = () => {
-    setShowPreview(false);
-  };
-
-  const handleBackHome = () => {
-    navigate("/client-home");
+  const handleCancel = () => {
+    setShowConfirmModal(false); // Close the modal
   };
 
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <button type="button" onClick={handleBackHome} style={styles.backButton}>
-          Back Home
-        </button>
-        <h2 style={styles.heading}>Submit your Measurements</h2>
+        <h2>Hello {username}, Please Update Your Measurements</h2>
         {error && <p style={styles.errorMessage}>{error}</p>}
-        {successMessage && <p style={styles.successMessage}>{successMessage}</p>}
-        <button type="button" onClick={togglePreview} style={styles.previewButton}>
-          {showPreview ? "Hide Preview" : "Show Preview"}
-        </button>
+        {successMessage && (
+          <p style={styles.successMessage}>{successMessage}</p>
+        )}
         <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.inputGroup}>
+          {/* Form Fields */}
+          <div style={styles.inputGroup}>
             <div style={styles.inputWrapper}>
               <label style={styles.label}>Neck:</label>
               <input
@@ -117,7 +122,6 @@ const CreateMeasurment = () => {
                 name="neck"
                 value={userData.neck}
                 onChange={handleChange}
-                placeholder="Neck"
                 style={styles.input}
                 required
               />
@@ -129,7 +133,6 @@ const CreateMeasurment = () => {
                 name="chest"
                 value={userData.chest}
                 onChange={handleChange}
-                placeholder="Chest"
                 style={styles.input}
                 required
               />
@@ -144,7 +147,6 @@ const CreateMeasurment = () => {
                 name="waist"
                 value={userData.waist}
                 onChange={handleChange}
-                placeholder="Waist"
                 style={styles.input}
                 required
               />
@@ -156,7 +158,6 @@ const CreateMeasurment = () => {
                 name="hip"
                 value={userData.hip}
                 onChange={handleChange}
-                placeholder="Hip"
                 style={styles.input}
                 required
               />
@@ -171,7 +172,6 @@ const CreateMeasurment = () => {
                 name="shoulder"
                 value={userData.shoulder}
                 onChange={handleChange}
-                placeholder="Shoulder"
                 style={styles.input}
                 required
               />
@@ -183,7 +183,6 @@ const CreateMeasurment = () => {
                 name="sleeve"
                 value={userData.sleeve}
                 onChange={handleChange}
-                placeholder="Sleeve"
                 style={styles.input}
                 required
               />
@@ -198,7 +197,6 @@ const CreateMeasurment = () => {
                 name="armhole"
                 value={userData.armhole}
                 onChange={handleChange}
-                placeholder="Armhole"
                 style={styles.input}
                 required
               />
@@ -210,7 +208,6 @@ const CreateMeasurment = () => {
                 name="bicep"
                 value={userData.bicep}
                 onChange={handleChange}
-                placeholder="Bicep"
                 style={styles.input}
                 required
               />
@@ -225,7 +222,6 @@ const CreateMeasurment = () => {
                 name="wrist"
                 value={userData.wrist}
                 onChange={handleChange}
-                placeholder="Wrist"
                 style={styles.input}
                 required
               />
@@ -237,7 +233,6 @@ const CreateMeasurment = () => {
                 name="inseam"
                 value={userData.inseam}
                 onChange={handleChange}
-                placeholder="Inseam"
                 style={styles.input}
                 required
               />
@@ -252,7 +247,6 @@ const CreateMeasurment = () => {
                 name="outseam"
                 value={userData.outseam}
                 onChange={handleChange}
-                placeholder="Outseam"
                 style={styles.input}
                 required
               />
@@ -264,7 +258,6 @@ const CreateMeasurment = () => {
                 name="thigh"
                 value={userData.thigh}
                 onChange={handleChange}
-                placeholder="Thigh"
                 style={styles.input}
                 required
               />
@@ -279,7 +272,6 @@ const CreateMeasurment = () => {
                 name="rise"
                 value={userData.rise}
                 onChange={handleChange}
-                placeholder="Rise"
                 style={styles.input}
                 required
               />
@@ -291,25 +283,53 @@ const CreateMeasurment = () => {
                 name="bodylength"
                 value={userData.bodylength}
                 onChange={handleChange}
-                placeholder="Body Length"
                 style={styles.input}
                 required
               />
             </div>
           </div>
-          
-
-          <button type="submit" style={styles.button}>Save Measurements</button>
+          {/* Additional form fields follow the same structure */}
+          <button type="submit" style={styles.button}>
+            Update Measurements
+          </button>
         </form>
-        
-        {showPreview && (
-          <div style={styles.modalOverlay}>
-            <div style={styles.modal}>
-              <h3 style={styles.previewHeading}>Measurement Preview</h3>
-              {Object.keys(userData).map((key) => (
-                key !== "username" && <p key={key}>{key.charAt(0).toUpperCase() + key.slice(1)}: {userData[key]}</p>
-              ))}
-              <button style={styles.modalCloseButton} onClick={closeModal}>Close</button>x
+
+        {/* Confirmation Modal */}
+        {showConfirmModal && (
+          <div style={styles.modal}>
+            <div style={styles.modalContent}>
+              <h3>Hello {username}, Review Your Changes</h3>
+              <p>Compare your current and updated measurements:</p>
+              <table style={styles.comparisonTable}>
+                <thead>
+                  <tr>
+                    <th>Body</th>
+                    <th>Current</th>
+                    <th>Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.keys(userData).map((key) => (
+                    <tr key={key}>
+                      <td>{key.charAt(0).toUpperCase() + key.slice(1)}</td>
+                      <td>{originalData?.[key]}</td>
+                      <td>{userData[key]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div>
+                <button
+                  onClick={handleConfirmSubmission}
+                  style={styles.confirmButton}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Submitting..." : "Confirm"}
+                </button>
+                <button onClick={handleCancel} style={styles.cancelButton}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -318,11 +338,11 @@ const CreateMeasurment = () => {
   );
 };
 
-// Inline styles
+// Styles
 const styles = {
   page: {
     minHeight: "100vh",
-    backgroundImage: `url(${image})`,
+    backgroundImage: `url(${backgroundImage})`,
     backgroundSize: "cover",
     backgroundPosition: "center",
     display: "flex",
@@ -333,21 +353,74 @@ const styles = {
   container: {
     maxWidth: "800px",
     width: "100%",
-    padding: "40px",
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    padding: "30px",
+    backgroundColor: "rgba(255, 255, 255, 0.9)", // Semi-transparent background
     borderRadius: "10px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-    fontFamily: "Arial, sans-serif",
     textAlign: "center",
-  },
-  heading: {
-    fontSize: "2rem",
-    marginBottom: "20px",
-    color: "#333",
   },
   form: {
     display: "flex",
     flexDirection: "column",
+    textAlign: "left",
+  },
+  input: {
+    padding: "10px",
+    fontSize: "1rem",
+    marginBottom: "20px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+  },
+  button: {
+    padding: "12px 20px",
+    fontSize: "1rem",
+    color: "#fff",
+    backgroundColor: "#007bff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  modal: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "10px",
+    textAlign: "center",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+  },
+  comparisonTable: {
+    width: "100%",
+    margin: "20px 0",
+    borderCollapse: "collapse",
+  },
+  confirmButton: {
+    padding: "10px 20px",
+    fontSize: "1rem",
+    color: "#fff",
+    backgroundColor: "green",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginRight: "10px",
+  },
+  cancelButton: {
+    padding: "10px 20px",
+    fontSize: "1rem",
+    color: "#fff",
+    backgroundColor: "#dc3545",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
   },
   inputGroup: {
     display: "flex",
@@ -355,78 +428,8 @@ const styles = {
     marginBottom: "20px",
   },
   inputWrapper: {
-    flex: "0 0 48%", // Ensures that the input fields take up 48% of the space, with a small gap
-  },
-  label: {
-    marginBottom: "5px",
-    fontSize: "1rem",
-    color: "#555",
-    textAlign: "left",
-  },
-  input: {
-    padding: "10px",
-    fontSize: "1rem",
-    width: "100%",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-  },
-  button: {
-    padding: "10px 15px",
-    fontSize: "1rem",
-    color: "#fff",
-    backgroundColor: "#007bff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-  },
-  previewButton: {
-    padding: "8px 12px",
-    fontSize: "1rem",
-    color: "#fff",
-    backgroundColor: "#28a745",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-    marginBottom: "20px", // Adjusted to move above the form
-  },
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  modal: {
-    backgroundColor: "#fff",
-    padding: "30px",
-    borderRadius: "10px",
-    maxWidth: "500px",
-    width: "100%",
-    textAlign: "center",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-  },
-  previewHeading: {
-    fontSize: "1.5rem",
-    marginBottom: "20px",
-    color: "#333",
-  },
-  modalCloseButton: {
-    padding: "10px 20px",
-    fontSize: "1rem",
-    color: "#fff",
-    backgroundColor: "#007bff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginTop: "20px",
+    flex: "0 0 48%", // Ensure input fields take up 48% of the space
   },
 };
 
-export default CreateMeasurment;
+export default MeasurementUpdatePage;

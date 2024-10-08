@@ -14,6 +14,8 @@ import OrderForm from './components/OrderForm';
 import OrderList from './components/OrderList';
 import OrderEdit from './components/OrderEdit';
 import CreateMeasurment from './components/CreateMeasurement';
+import MeasurementViewPage from './components/MeasurementViewPage';
+import MeasurementUpdatePage from './components/MeasurementUpdatePage';
 
 
 
@@ -39,6 +41,8 @@ const App = () => (
           <Route path='/neworders' element={<OrderForm/>}/>
           <Route path="/orders/edit/:orderId" element={<OrderEdit />} /> 
           <Route path="/createmeasurement" element={<CreateMeasurment/>} />
+          <Route path="/measurements/update" element={<MeasurementUpdatePage/>} />
+          <Route path="/measurements/view" element={<MeasurementViewPage/>} />
           
 
       </Routes>

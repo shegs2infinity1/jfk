@@ -1,24 +1,19 @@
-// ClientHomePage.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import clientHomePageBackground from "../images/clienthome.webp"
+import clientHomePageBackground from "../images/clienthome.webp";
 
 const ClientHomePage = () => {
     const [profile, setProfile] = useState(null);
     const [error, setError] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false); // For error modal visibility
     const username = localStorage.getItem('username');
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                // const token = localStorage.getItem('token');
-                const response = await axios.get(`http://localhost:8000/api/users/profile/${username}`, {
-                    // headers: {
-                    //     "Content-Type" : 'application/json'
-                    // } 
-                })
+                const response = await axios.get(`http://localhost:8000/api/users/profile/${username}`);
                 setProfile(response.data);
             } catch (err) {
                 setError('Unable to fetch profile information.');
@@ -31,8 +26,27 @@ const ClientHomePage = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        localStorage.removeItem('username')
+        localStorage.removeItem('username');
         navigate('/login');
+    };
+
+    const handleMeasurementCheck = async () => {
+        try {
+            const response = await axios.get('http://localhost:8000/api/users/measurements/view/', {
+                params: { username }
+            });
+            if (response.data) {
+                navigate('/measurements/view'); // Navigate to measurements page if data exists
+            } else {
+                setModalVisible(true); // Show modal if no measurements found
+            }
+        } catch (error) {
+            setModalVisible(true); // Show modal on error (e.g., no measurements found)
+        }
+    };
+
+    const closeModal = () => {
+        setModalVisible(false); // Close modal when user clicks "Close"
     };
 
     if (error) {
@@ -60,13 +74,25 @@ const ClientHomePage = () => {
                     <button style={styles.button} onClick={() => navigate('/neworders')}>Create New Order</button>
                     <button style={styles.button} onClick={() => navigate('/orders')}>View Orders</button>
                     <button style={styles.button} onClick={() => navigate('/createmeasurement')}>Create Measurements</button>
+                    <button style={styles.button} onClick={handleMeasurementCheck}>View or Update Measurements</button>
                     <button style={styles.logoutButton} onClick={handleLogout}>Logout</button>
                 </div>
             </div>
+
+            {/* Modal for No Measurements Error */}
+            {modalVisible && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.modalContent}>
+                        <h3 style={styles.modalHeading}>Error</h3>
+                        <p style={styles.modalText}>You don't have any measurements to view or update.</p>
+                        <p style={styles.modalText}>Please proceed to capture your measurment </p>
+                        <button onClick={closeModal} style={styles.closeButton}>Close</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
-
 
 // Inline styles
 const styles = {
@@ -78,8 +104,8 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        padding: '20px',
         color: '#fff',
-        padding: '20px', // Add padding to ensure there's space around the container
     },
     container: {
         maxWidth: '700px',
@@ -87,14 +113,14 @@ const styles = {
         minHeight: '400px',
         padding: '40px',
         borderRadius: '10px',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)', // Adjusted for better contrast
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         fontFamily: 'Arial, sans-serif',
+        textAlign: 'center',
     },
     heading: {
         fontSize: '2.5rem',
         marginBottom: '30px',
-        textAlign: 'center',
     },
     profileInfo: {
         marginBottom: '30px',
@@ -102,30 +128,33 @@ const styles = {
     },
     buttonContainer: {
         display: 'flex',
+        flexWrap: 'wrap',
         justifyContent: 'space-between',
     },
     button: {
-        padding: '15px 25px',
+        padding: '15px 20px',
         fontSize: '1rem',
         color: '#fff',
         backgroundColor: '#007bff',
         border: 'none',
         borderRadius: '5px',
         cursor: 'pointer',
+        margin: '10px',
+        flexBasis: '45%',
+        flexGrow: 1,
         transition: 'background-color 0.3s',
-        flex: '1',
-        marginRight: '10px',
     },
     logoutButton: {
-        padding: '15px 25px',
+        padding: '15px 20px',
         fontSize: '1rem',
         color: '#fff',
         backgroundColor: '#dc3545',
         border: 'none',
         borderRadius: '5px',
         cursor: 'pointer',
-        transition: 'background-color 0.3s',
-        flex: '1',
+        margin: '10px',
+        flexBasis: '45%',
+        flexGrow: 1,
     },
     loading: {
         textAlign: 'center',
@@ -136,6 +165,46 @@ const styles = {
         textAlign: 'center',
         color: 'red',
         fontSize: '1.2rem',
+    },
+    modalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,  // Ensure the modal is above all content
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        padding: '30px',
+        borderRadius: '10px',
+        textAlign: 'center',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        width: '80%',  // Ensure it's not too wide on smaller screens
+        maxWidth: '400px',
+    },
+    modalHeading: {
+        fontSize: '1.5rem',
+        color: '#333',
+        marginBottom: '10px',
+    },
+    modalText: {
+        fontSize: '1rem',
+        color: '#333',
+        marginBottom: '20px',
+    },
+    closeButton: {
+        padding: '10px 20px',
+        fontSize: '1rem',
+        color: '#fff',
+        backgroundColor: '#007bff',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
     },
 };
 

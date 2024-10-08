@@ -13,9 +13,7 @@ const OrderList = () => {
             try {
                 const username = localStorage.getItem('username');
                 const response = await axios.get('http://localhost:8000/api/users/orders/', {
-                    params: {
-                        username: username,
-                    },
+                    params: { username },
                 });
                 setOrders(response.data);
             } catch (error) {
@@ -51,12 +49,12 @@ const OrderList = () => {
                     <ul style={styles.orderList}>
                         {orders.map((order) => (
                             <li key={order.id} style={styles.orderItem}>
-                                <p>Order #{order.id} - Status: {order.status}</p>
-                                <p>Measurements: {order.measurements}</p>
-                                <p>Comments: {order.comments}</p>
-                                <p>Confirmed: {order.is_confirmed ? "Yes" : "No"}</p>
+                                <p><strong>Order #{order.id}</strong> - Status: {order.status}</p>
+                                <p><strong>Measurements:</strong> {order.measurements}</p>
+                                <p><strong>Comments:</strong> {order.comments}</p>
+                                <p><strong>Confirmed:</strong> {order.is_confirmed ? "Yes" : "No"}</p>
                                 {!order.is_confirmed && (
-                                    <div>
+                                    <div style={styles.buttonGroup}>
                                         <button onClick={() => handleConfirm(order.id)} style={styles.button}>
                                             Confirm Order
                                         </button>
@@ -71,8 +69,14 @@ const OrderList = () => {
                 ) : (
                     <p style={styles.noOrders}>You have no orders yet.</p>
                 )}
-                <button onClick={() => navigate('/neworders')} style={styles.button}>Place a New Order</button>
-                <button onClick={() => navigate('/client-home')} style={styles.button}>Go to Home</button>
+                <div style={styles.actionButtons}>
+                    <button onClick={() => navigate('/neworders')} style={styles.actionButton}>
+                        Place a New Order
+                    </button>
+                    <button onClick={() => navigate('/client-home')} style={styles.actionButton}>
+                        Go to Home
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -88,22 +92,22 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        color: '#fff',
         padding: '20px',
     },
     container: {
         maxWidth: '800px',
+        width: '100%',
         padding: '30px',
         borderRadius: '10px',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)', // Increased opacity for better readability
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         fontFamily: 'Arial, sans-serif',
+        color: '#333', // Darkened text color for better readability
     },
     heading: {
         fontSize: '2rem',
         marginBottom: '20px',
         textAlign: 'center',
-        color: '#333',
     },
     orderList: {
         listStyleType: 'none',
@@ -115,13 +119,17 @@ const styles = {
         borderBottom: '1px solid #ccc',
         color: '#333',
     },
+    buttonGroup: {
+        display: 'flex',
+        gap: '10px', // Added space between the buttons
+        marginTop: '10px',
+    },
     noOrders: {
         fontSize: '1.2rem',
         textAlign: 'center',
-        color: '#333',
     },
     button: {
-        padding: '15px',
+        padding: '10px 20px',
         fontSize: '1rem',
         color: '#fff',
         backgroundColor: '#007bff',
@@ -129,7 +137,22 @@ const styles = {
         borderRadius: '5px',
         cursor: 'pointer',
         transition: 'background-color 0.3s',
-        marginTop: '10px', // Add margin between buttons
+        flexGrow: 1,
+    },
+    actionButtons: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginTop: '20px',
+    },
+    actionButton: {
+        padding: '12px 20px',
+        fontSize: '1rem',
+        color: '#fff',
+        backgroundColor: '#28a745',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s',
     },
 };
 
