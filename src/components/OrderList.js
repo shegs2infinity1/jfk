@@ -12,10 +12,19 @@ const OrderList = () => {
         const fetchOrders = async () => {
             try {
                 const username = localStorage.getItem('username');
-                const response = await axios.get('http://localhost:8000/api/users/orders/', {
-                    params: { username },
-                });
-                setOrders(response.data);
+                const userrole = localStorage.getItem('role');
+                if (userrole === 'admin') {
+
+                    const response = await axios.get('http://localhost:8000/api/users/admin/orders');
+                    setOrders(response.data);
+
+                } else {
+                    const response = await axios.get('http://localhost:8000/api/users/orders/', {
+                        params: { username },
+                     });
+                    setOrders(response.data);
+            }
+                
             } catch (error) {
                 console.error('Error fetching orders:', error);
             }
@@ -73,7 +82,7 @@ const OrderList = () => {
                     <button onClick={() => navigate('/neworders')} style={styles.actionButton}>
                         Place a New Order
                     </button>
-                    <button onClick={() => navigate('/client-home')} style={styles.actionButton}>
+                    <button onClick={() => navigate(-1)} style={styles.actionButton}>
                         Go to Home
                     </button>
                 </div>
