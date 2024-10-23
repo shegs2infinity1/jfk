@@ -40,7 +40,7 @@ const AdminUserProfileList = () => {
   return (
     <div style={styles.pageContainer}>
       <div style={styles.innerContainer}>
-        <h2 style={styles.title}>User Profiles</h2>
+        <h2 style={styles.title}>Client Profiles</h2>
         <div style={styles.buttonGroup}>
           <button
             onClick={() => navigate("/signup")}
@@ -73,6 +73,13 @@ const AdminUserProfileList = () => {
                 </td>
                 <td style={styles.tableCell}>{profile.email}</td>
                 <td style={styles.tableCell}>
+                <div style={styles.actionButtonContainer}>
+                  <button
+                    style={styles.actionButton}
+                    onClick={() => navigate(`/admin/users/view/${profile.username}`)}
+                  >
+                    View
+                  </button>
                   <button
                     style={styles.actionButton}
                     onClick={() => navigate(`/admin/users/edit/${profile.username}`)}
@@ -85,7 +92,9 @@ const AdminUserProfileList = () => {
                   >
                     Delete
                   </button>
-                </td>
+                </div>
+              </td>
+
               </tr>
             ))}
           </tbody>
@@ -108,12 +117,15 @@ const styles = {
   },
   innerContainer: {
     backgroundColor: "rgba(255, 255, 255, 0.85)",
-    padding: "30px",
+    padding: "40px",
     borderRadius: "10px",
     boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-    maxWidth: "800px",
+    maxWidth: "1000px",
+    minHeight: "600px",
     width: "100%",
     textAlign: "center",
+    marginTop: "40px",  
+    marginBottom: "40px",
   },
   title: {
     marginBottom: "20px",
@@ -123,7 +135,7 @@ const styles = {
   },
   buttonGroup: {
     display: "flex",
-    justifyContent: "space-between", // Spreads the buttons apart
+    justifyContent: "space-between",
     marginBottom: "20px",
   },
   createButton: {
@@ -166,24 +178,25 @@ const styles = {
     borderBottom: "1px solid #ddd",
     textAlign: "left",
   },
-  tableRow: {
-    "&:hover": {
-      backgroundColor: "#f9f9f9",
-    },
+  actionButtonContainer: {
+    display: "inline-block", // Ensures inline display of buttons
   },
   actionButton: {
     padding: "8px 12px",
-    marginRight: "10px",
+    margin: "0 5px", // Adjust the spacing between buttons
     backgroundColor: "#007bff",
     color: "#fff",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
     transition: "background-color 0.3s ease",
+    minWidth: "75px", // Ensure all buttons have the same width
+    textAlign: "center",
   },
   deleteButton: {
     backgroundColor: "#dc3545",
   },
 };
+
 
 export default AdminUserProfileList;

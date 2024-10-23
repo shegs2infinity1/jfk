@@ -1,7 +1,7 @@
 // CreateMeasurment.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import image from "../images/createmeasure.webp";
 
 const CreateMeasurment = () => {
@@ -26,6 +26,7 @@ const CreateMeasurment = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const navigate = useNavigate();
+  const { username } = useParams();
 
   const validateForm = () => {
     const requiredFields = ["neck", "chest", "waist", "hip", "shoulder"];
@@ -40,7 +41,7 @@ const CreateMeasurment = () => {
   };
 
   useEffect(() => {
-    const username = localStorage.getItem("username");
+    //const username = localStorage.getItem("username");
     setUserData((prevData) => ({
       ...prevData,
       username: username,
@@ -55,7 +56,7 @@ const CreateMeasurment = () => {
       setSuccessMessage("Measurements saved successfully!");
       setShowPreview(false);
       setUserData({
-        username: localStorage.getItem("username"),
+        username: username,
         neck: "",
         chest: "",
         waist: "",
@@ -93,7 +94,15 @@ const CreateMeasurment = () => {
   };
 
   const handleBackHome = () => {
-    navigate("/client-home");
+    const role = localStorage.getItem("role")
+    if (role==='client'){
+      navigate("/client-home");
+    }
+
+    if (role==='admin'){
+      navigate("/admin/dashboard");
+    }
+    
   };
 
   return (
@@ -102,7 +111,7 @@ const CreateMeasurment = () => {
         <button type="button" onClick={handleBackHome} style={styles.backButton}>
           Back Home
         </button>
-        <h2 style={styles.heading}>Submit your Measurements</h2>
+        <h2 style={styles.heading}>Submit your Measurements for {username}</h2>
         {error && <p style={styles.errorMessage}>{error}</p>}
         {successMessage && <p style={styles.successMessage}>{successMessage}</p>}
         <button type="button" onClick={togglePreview} style={styles.previewButton}>
@@ -390,6 +399,16 @@ const styles = {
     cursor: "pointer",
     transition: "background-color 0.3s",
     marginBottom: "20px", // Adjusted to move above the form
+  },
+  errorMessage: {
+    color: "#dc3545", // Red color for error
+    fontSize: "1rem",
+    marginBottom: "15px",
+  },
+  successMessage: {
+    color: "#28a745", // Green color for success
+    fontSize: "1rem",
+    marginBottom: "15px",
   },
   modalOverlay: {
     position: "fixed",

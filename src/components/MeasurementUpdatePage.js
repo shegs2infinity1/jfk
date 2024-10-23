@@ -1,7 +1,7 @@
 // MeasurementUpdatePage.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import backgroundImage from "../images/measurement_background_update.webp"; // Adjust the path as necessary
 
 const MeasurementUpdatePage = () => {
@@ -27,13 +27,14 @@ const MeasurementUpdatePage = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Prevent multiple submissions
-  const [username, setUserName] = useState("");
+  // const [username, setUserName] = useState("");
+  const { username } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMeasurements = async () => {
-      const username = localStorage.getItem("username");
-      setUserName(username);
+      //const username = localStorage.getItem("username");
+      //setUserName(username);
       try {
         const response = await axios.get(
           "http://localhost:8000/api/users/measurements/view/",
@@ -73,7 +74,7 @@ const MeasurementUpdatePage = () => {
   const handleConfirmSubmission = async () => {
     if (isSubmitting) return; // Prevent double submission
 
-    const username = localStorage.getItem("username");
+    //const username = localStorage.getItem("username");
     try {
       setIsSubmitting(true); // Disable form during submission
       await axios.put("http://localhost:8000/api/users/measurements/update/", {
@@ -83,7 +84,7 @@ const MeasurementUpdatePage = () => {
       setSuccessMessage("Measurements updated successfully!");
       setShowConfirmModal(false);
       setTimeout(() => {
-        navigate("/measurements/view"); // Redirect after successful update
+        navigate(`/measurements/view/${username}`); // Redirect after successful update
       }, 2000);
     } catch (error) {
       console.error("Error updating measurements:", error);

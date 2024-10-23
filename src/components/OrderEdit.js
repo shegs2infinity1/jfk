@@ -12,7 +12,7 @@ const OrderEdit = () => {
     useEffect(() => {
         const fetchOrderDetails = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/api/orders/${orderId}/`);
+                const response = await axios.get(`http://localhost:8000/api/users/orders/${orderId}/`);
                 setMeasurements(response.data.measurements);
                 setComments(response.data.comments);
             } catch (error) {

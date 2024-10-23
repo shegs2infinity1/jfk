@@ -1,19 +1,21 @@
 // MeasurementViewPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import backgroundImage from '../images/measurements_background.webp'; // Adjust the path as needed
 
 const MeasurementViewPage = () => {
     const [measurements, setMeasurements] = useState(null);
-    const [username, setUsername] = useState('');
+    // const [username, setUsername] = useState('');
+    const role =  localStorage.getItem("role")
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const { username } = useParams();
 
     useEffect(() => {
-        const fetchMeasurements = async () => {
-            const username = localStorage.getItem("username");
-            setUsername(username);
+        const fetchMeasurements = async () => { 
+            console.log(username);
+            // const username = username
             try {
                 const response = await axios.get('http://localhost:8000/api/users/measurements/view/', {
                     params: { username }
@@ -29,10 +31,16 @@ const MeasurementViewPage = () => {
     }, []);
 
     const handleEdit = () => {
-        navigate('/measurements/update');
+        navigate(`/measurements/update/${username}`);
     };
     const handleBackHome = () => {
-        navigate('/client-home');
+        if (role === 'client'){
+            navigate('/client-home');
+        }
+        if (role === 'admin'){
+            navigate('/admin/dashboard');
+        }
+        
     };
 
     if (error) {

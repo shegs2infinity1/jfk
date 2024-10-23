@@ -36,7 +36,7 @@ const ClientHomePage = () => {
                 params: { username }
             });
             if (response.data) {
-                navigate('/measurements/view'); // Navigate to measurements page if data exists
+                navigate(`/measurements/view/${username}`); // Navigate to measurements page if data exists
             } else {
                 setModalVisible(true); // Show modal if no measurements found
             }
@@ -73,7 +73,7 @@ const ClientHomePage = () => {
                     <button style={styles.button} onClick={() => navigate('/biodata')}>View or Submit Biodata</button>
                     <button style={styles.button} onClick={() => navigate('/neworders')}>Create New Order</button>
                     <button style={styles.button} onClick={() => navigate('/orders')}>View Orders</button>
-                    <button style={styles.button} onClick={() => navigate('/createmeasurement')}>Create Measurements</button>
+                    <button style={styles.button} onClick={() => navigate(`/createmeasurement/${profile.username}`)}>Create Measurements</button>
                     <button style={styles.button} onClick={handleMeasurementCheck}>View or Update Measurements</button>
                     <button style={styles.logoutButton} onClick={handleLogout}>Logout</button>
                 </div>

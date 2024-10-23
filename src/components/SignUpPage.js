@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import image from "../images/singup.webp"; // Adjust image path if needed
+import loadingGif from "../images/loading.gif"; // Add a loading GIF here
 
 const SignUpPage = () => {
   const [userData, setUserData] = useState({
@@ -23,12 +24,14 @@ const SignUpPage = () => {
   });
 
   const [errorMessage, setErrorMessage] = useState(""); // State to hold error messages
+  const [loading, setLoading] = useState(false); // State to manage loading status
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       // Clear previous error message
       setErrorMessage("");
+      setLoading(true); // Set loading to true
 
       // Post user data to the backend for registration
       await axios.post("http://localhost:8000/api/users/signup/", userData);
@@ -74,6 +77,8 @@ const SignUpPage = () => {
         setErrorMessage("An unexpected error occurred. Please try again.");
       }
       console.error("Error during sign-up", error);
+    }finally {
+      setLoading(false); // Reset loading to false when done
     }
   };
 
@@ -199,8 +204,17 @@ const SignUpPage = () => {
             required
           />
           <br />
-          <button type="submit" style={styles.button}>
-            Submit
+          {/* Disable button and show loading GIF when loading */}
+          <button type="submit" style={styles.button} disabled={loading}>
+          {loading ? (
+              <img
+                src={loadingGif}
+                alt="Please wait..."
+                style={styles.loadingGif}
+              />
+            ) : (
+              "Submit"
+            )}
           </button>
           <br />
           <button
@@ -287,6 +301,10 @@ const styles = {
   errorMessage: {
     color: "red",
     marginTop: "10px",
+  },
+  loadingGif: {
+    width: "20px",
+    height: "20px",
   },
 };
 

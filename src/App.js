@@ -19,6 +19,7 @@ import MeasurementViewPage from "./components/MeasurementViewPage";
 import MeasurementUpdatePage from "./components/MeasurementUpdatePage";
 import AdminDashboard from "./components/AdminDashboardAndOrders";
 import ClientList from "./components/AdminUserProfileList";
+import ViewProfileAdmin from "./components/AdminProfileView";
 
 import "./styles/global.css";
 
@@ -71,12 +72,20 @@ const App = () => (
           </PrivateRoute>
         }
       />
+      <Route
+        path="/admin/users/view/:ProfileId"
+        element={
+          <PrivateRoute role="admin">
+            <ViewProfileAdmin />
+          </PrivateRoute>
+        }
+      />
       <Route path="/orders" element={<OrderList />} />
       <Route path="/neworders" element={<OrderForm />} />
       <Route path="/orders/edit/:orderId" element={<OrderEdit />} />
-      <Route path="/createmeasurement" element={<CreateMeasurment />} />
-      <Route path="/measurements/update" element={<MeasurementUpdatePage />} />
-      <Route path="/measurements/view" element={<MeasurementViewPage />} />
+      <Route path="/createmeasurement/:username" element={<CreateMeasurment />} />
+      <Route path="/measurements/update/:username" element={<MeasurementUpdatePage />} />
+      <Route path="/measurements/view/:username" element={<MeasurementViewPage />} />
       <Route
         path="/admin/dashboard"
         element={

@@ -33,9 +33,11 @@ const OrderList = () => {
         fetchOrders();
     }, []);
 
-    const handleConfirm = async (orderId) => {
+    const handleConfirm = async (orderId,client) => {
         try {
-            await axios.post(`http://localhost:8000/api/users/orders/confirm/${orderId}/`);
+            await axios.post(`http://localhost:8000/api/users/orders/confirm/${orderId}/`,{
+                client
+            });
             setOrders((prevOrders) =>
                 prevOrders.map((order) =>
                     order.id === orderId ? { ...order, is_confirmed: true } : order
@@ -53,22 +55,39 @@ const OrderList = () => {
     return (
         <div style={styles.page}>
             <div style={styles.container}>
+            <div style={styles.actionButtons}>
+                    <button onClick={() => navigate('/neworders')} style={styles.actionButton}>
+                        Place a New Order
+                    </button>
+                    <button onClick={() => navigate(-1)} style={styles.actionButton}>
+                        Go to Home
+                    </button>
+                </div>
                 <h2 style={styles.heading}>Your Orders</h2>
                 {orders.length > 0 ? (
                     <ul style={styles.orderList}>
                         {orders.map((order) => (
                             <li key={order.id} style={styles.orderItem}>
                                 <p><strong>Order #{order.id}</strong> - Status: {order.status}</p>
+                                <p><strong>Order Date:</strong> {order.order_date}</p>
+                                <p><strong>Client:</strong> {order.client}</p>
+                                <p><strong>Event Type:</strong> {order.event_type}</p>
+                                <p><strong>Expected Delivery Date:</strong> {order.expected_date}</p>
+                                <p><strong>Material on Us?</strong> {order.material ? "Yes" : "No"}</p>
+                                <p><strong>Prefered Color:</strong> {order.preferred_Color}</p>
                                 <p><strong>Measurements:</strong> {order.measurements}</p>
                                 <p><strong>Comments:</strong> {order.comments}</p>
                                 <p><strong>Confirmed:</strong> {order.is_confirmed ? "Yes" : "No"}</p>
                                 {!order.is_confirmed && (
                                     <div style={styles.buttonGroup}>
-                                        <button onClick={() => handleConfirm(order.id)} style={styles.button}>
+                                        <button onClick={() => handleConfirm(order.id,order.client)} style={styles.button}>
                                             Confirm Order
                                         </button>
                                         <button onClick={() => handleEdit(order.id)} style={styles.button}>
                                             Edit Order
+                                        </button>
+                                        <button onClick={() => handleEdit(order.id)} style={styles.button}>
+                                            Delete Order
                                         </button>
                                     </div>
                                 )}
@@ -78,14 +97,7 @@ const OrderList = () => {
                 ) : (
                     <p style={styles.noOrders}>You have no orders yet.</p>
                 )}
-                <div style={styles.actionButtons}>
-                    <button onClick={() => navigate('/neworders')} style={styles.actionButton}>
-                        Place a New Order
-                    </button>
-                    <button onClick={() => navigate(-1)} style={styles.actionButton}>
-                        Go to Home
-                    </button>
-                </div>
+                
             </div>
         </div>
     );
