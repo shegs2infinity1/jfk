@@ -1,30 +1,35 @@
-// OrderList.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import orderListBackground from '../images/orderlist.webp';
+import ReactPaginate from 'react-paginate';
+import '../styles/OrderList.css'; // Import the CSS file
 
 const OrderList = () => {
     const [orders, setOrders] = useState([]);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [mailData, setMailData] = useState({
+        message: "",
+        subject: "",
+        username: "",
+    });
+    const [loading, setLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
+    const ordersPerPage = 5;
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
                 const username = localStorage.getItem('username');
-                const userrole = localStorage.getItem('role');
-                if (userrole === 'admin') {
-
-                    const response = await axios.get('http://localhost:8000/api/users/admin/orders');
-                    setOrders(response.data);
-
-                } else {
-                    const response = await axios.get('http://localhost:8000/api/users/orders/', {
-                        params: { username },
-                     });
-                    setOrders(response.data);
-            }
-                
+                const userRole = localStorage.getItem('role');
+                const url = userRole === 'admin'
+                    ? 'http://localhost:8000/api/users/admin/orders'
+                    : 'http://localhost:8000/api/users/orders/';
+                const params = userRole !== 'admin' ? { username } : null;
+                const response = await axios.get(url, { params });
+                setOrders(response.data);
             } catch (error) {
                 console.error('Error fetching orders:', error);
             }
@@ -33,148 +38,191 @@ const OrderList = () => {
         fetchOrders();
     }, []);
 
-    const handleConfirm = async (orderId,client) => {
+    const composeMailData = (order, action) => {
+        const message = `
+            <p>Dear <strong>${order.client}</strong>,</p>
+            <p>Your Order with order number ${order.id} has been ${action} with your number one Tailor Shop.</p>
+            <p><strong>Expected Delivery Date:</strong> ${order.expected_date}</p>
+            <p><strong>Preferred Color:</strong> ${order.preferred_Color}</p>
+            <p><strong>Event Type:</strong> ${order.event_type}</p>
+            <p>Thanks for choosing <strong>JFK Tailor Shop</strong>.</p>
+            <p>Best regards,<br/>JFK Tailor Shop</p>
+        `;
+        setMailData({
+            message,
+            subject: `Your Order (${order.id}) with JFK ${action}`,
+            username: order.client,
+        });
+    };
+
+    const sendNotificationEmail = async () => {
         try {
-            await axios.post(`http://localhost:8000/api/users/orders/confirm/${orderId}/`,{
-                client
-            });
-            setOrders((prevOrders) =>
-                prevOrders.map((order) =>
-                    order.id === orderId ? { ...order, is_confirmed: true } : order
-                )
-            );
+            await axios.post('http://localhost:8000/api/users/notifications/email', mailData);
         } catch (error) {
-            console.error('Error confirming order:', error);
+            console.error('Error sending email notification:', error);
         }
     };
 
-    const handleEdit = (orderId) => {
-        navigate(`/orders/edit/${orderId}`);
+    const handleConfirm = async () => {
+        if (!selectedOrder) return;
+        try {
+            setLoading(true);
+            await axios.post(`http://localhost:8000/api/users/orders/confirm/${selectedOrder.id}/`, {
+                client: selectedOrder.client,
+            });
+            setOrders((prevOrders) =>
+                prevOrders.map(order =>
+                    order.id === selectedOrder.id ? { ...order, is_confirmed: true } : order
+                )
+            );
+            composeMailData(selectedOrder, 'confirmed');
+            await sendNotificationEmail();
+            setShowConfirmationModal(false);
+        } catch (error) {
+            console.error('Error confirming order:', error);
+        } finally {
+            setLoading(false);
+            setSelectedOrder(null);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!selectedOrder) return;
+        try {
+            setLoading(true);
+            await axios.post(`http://localhost:8000/api/users/orders/delete/${selectedOrder.id}/`);
+            setOrders((prevOrders) => prevOrders.filter(order => order.id !== selectedOrder.id));
+            composeMailData(selectedOrder, 'deleted');
+            await sendNotificationEmail();
+            setShowDeleteModal(false);
+        } catch (error) {
+            console.error('Error deleting order:', error);
+        } finally {
+            setLoading(false);
+            setSelectedOrder(null);
+        }
+    };
+
+    const handleEdit = (orderId) => navigate(`/orders/edit/${orderId}`);
+
+    const handleOpenConfirmModal = (order) => {
+        setSelectedOrder(order);
+        setShowConfirmationModal(true);
+    };
+
+    const handleOpenDeleteModal = (order) => {
+        setSelectedOrder(order);
+        setShowDeleteModal(true);
+    };
+
+    const pageCount = Math.ceil(orders.length / ordersPerPage);
+    const offset = currentPage * ordersPerPage;
+    const currentOrders = orders.slice(offset, offset + ordersPerPage);
+
+    const handlePageClick = (data) => {
+        setCurrentPage(data.selected);
     };
 
     return (
-        <div style={styles.page}>
-            <div style={styles.container}>
-            <div style={styles.actionButtons}>
-                    <button onClick={() => navigate('/neworders')} style={styles.actionButton}>
+        <div className="page">
+            <div className="container">
+                <div className="actionButtons">
+                    <button onClick={() => navigate('/neworders')} className="actionButton">
                         Place a New Order
                     </button>
-                    <button onClick={() => navigate(-1)} style={styles.actionButton}>
-                        Go to Home
+                    <button onClick={() => navigate(-1)} className="actionButton">
+                        Go Back
                     </button>
                 </div>
-                <h2 style={styles.heading}>Your Orders</h2>
-                {orders.length > 0 ? (
-                    <ul style={styles.orderList}>
-                        {orders.map((order) => (
-                            <li key={order.id} style={styles.orderItem}>
-                                <p><strong>Order #{order.id}</strong> - Status: {order.status}</p>
-                                <p><strong>Order Date:</strong> {order.order_date}</p>
-                                <p><strong>Client:</strong> {order.client}</p>
-                                <p><strong>Event Type:</strong> {order.event_type}</p>
-                                <p><strong>Expected Delivery Date:</strong> {order.expected_date}</p>
-                                <p><strong>Material on Us?</strong> {order.material ? "Yes" : "No"}</p>
-                                <p><strong>Prefered Color:</strong> {order.preferred_Color}</p>
-                                <p><strong>Measurements:</strong> {order.measurements}</p>
-                                <p><strong>Comments:</strong> {order.comments}</p>
-                                <p><strong>Confirmed:</strong> {order.is_confirmed ? "Yes" : "No"}</p>
-                                {!order.is_confirmed && (
-                                    <div style={styles.buttonGroup}>
-                                        <button onClick={() => handleConfirm(order.id,order.client)} style={styles.button}>
-                                            Confirm Order
+                <h2 className="heading">Your Orders</h2>
+                {currentOrders.length > 0 ? (
+                    <>
+                        <ul className="orderList">
+                            {currentOrders.map(order => (
+                                <li key={order.id} className="orderItem">
+                                    <p><strong>Order #{order.id}</strong> - Status: {order.status}</p>
+                                    <p><strong>Order Date:</strong> {order.order_date}</p>
+                                    <p><strong>Client:</strong> {order.client}</p>
+                                    <p><strong>Event Type:</strong> {order.event_type}</p>
+                                    <p><strong>Preferred Color:</strong> {order.preferred_Color}</p>
+                                    <p><strong>Material on Us?</strong> {order.material ? "Yes" : "No"}</p>
+                                    <p><strong>Preferred Color:</strong> {order.preferred_Color}</p>
+                                    <p><strong>Measurements:</strong> {order.measurements}</p>
+                                    <p><strong>Comments:</strong> {order.comments}</p>
+                                    <p><strong>Confirmed:</strong> {order.is_confirmed ? "Yes" : "No"}</p>
+                                        <div className="buttonGroup">
+                                        {!order.is_confirmed && (
+                                            <button className="button" onClick={() => handleOpenConfirmModal(order)}>
+                                                Confirm Order
+                                            </button>
+                                        )}
+                                        {!order.is_confirmed && (
+                                        <button className="button" onClick={() => handleEdit(order.id)}>
+                                            Edit
                                         </button>
-                                        <button onClick={() => handleEdit(order.id)} style={styles.button}>
-                                            Edit Order
+                                        )}
+                                        {!order.is_confirmed && (
+                                        <button className="button" onClick={() => handleOpenDeleteModal(order)}>
+                                            Delete
                                         </button>
-                                        <button onClick={() => handleEdit(order.id)} style={styles.button}>
-                                            Delete Order
-                                        </button>
+                                    )}
                                     </div>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
+                                </li>
+                            ))}
+                        </ul>
+                        <ReactPaginate
+                            previousLabel={'Previous'}
+                            nextLabel={'Next'}
+                            breakLabel={'...'}
+                            breakClassName={'break-me'}
+                            pageCount={pageCount}
+                            marginPagesDisplayed={2}
+                            pageRangeDisplayed={5}
+                            onPageChange={handlePageClick}
+                            containerClassName={'paginationContainer'}
+                            activeClassName={'activePage'}
+                            pageClassName={'pageItem'}
+                            previousClassName={'pageItem'}
+                            nextClassName={'pageItem'}
+                            disabledClassName={'disabledPage'}
+                        />
+                    </>
                 ) : (
-                    <p style={styles.noOrders}>You have no orders yet.</p>
+                    <p className="noOrders">No orders available.</p>
                 )}
-                
+
+                {showConfirmationModal && (
+                    <div className="modalOverlay">
+                        <div className="modalContent">
+                            <h3>Confirm Order</h3>
+                            <p>Are you sure you want to confirm this order?</p>
+                            <button className="confirmButton" onClick={handleConfirm}>
+                                {loading ? 'Confirming...' : 'Yes, Confirm'}
+                            </button>
+                            <button className="closeButton" onClick={() => setShowConfirmationModal(false)}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {showDeleteModal && (
+                    <div className="modalOverlay">
+                        <div className="modalContent">
+                            <h3>Delete Order</h3>
+                            <p>Are you sure you want to delete this order?</p>
+                            <button className="confirmButton" onClick={handleDelete}>
+                                {loading ? 'Deleting...' : 'Yes, Delete'}
+                            </button>
+                            <button className="closeButton" onClick={() => setShowDeleteModal(false)}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
-};
-
-// Inline styles
-const styles = {
-    page: {
-        minHeight: '100vh',
-        backgroundImage: `url(${orderListBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '20px',
-    },
-    container: {
-        maxWidth: '800px',
-        width: '100%',
-        padding: '30px',
-        borderRadius: '10px',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)', // Increased opacity for better readability
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        fontFamily: 'Arial, sans-serif',
-        color: '#333', // Darkened text color for better readability
-    },
-    heading: {
-        fontSize: '2rem',
-        marginBottom: '20px',
-        textAlign: 'center',
-    },
-    orderList: {
-        listStyleType: 'none',
-        padding: 0,
-    },
-    orderItem: {
-        padding: '15px',
-        marginBottom: '10px',
-        borderBottom: '1px solid #ccc',
-        color: '#333',
-    },
-    buttonGroup: {
-        display: 'flex',
-        gap: '10px', // Added space between the buttons
-        marginTop: '10px',
-    },
-    noOrders: {
-        fontSize: '1.2rem',
-        textAlign: 'center',
-    },
-    button: {
-        padding: '10px 20px',
-        fontSize: '1rem',
-        color: '#fff',
-        backgroundColor: '#007bff',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s',
-        flexGrow: 1,
-    },
-    actionButtons: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        marginTop: '20px',
-    },
-    actionButton: {
-        padding: '12px 20px',
-        fontSize: '1rem',
-        color: '#fff',
-        backgroundColor: '#28a745',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s',
-    },
 };
 
 export default OrderList;

@@ -1,3 +1,4 @@
+//OrderForm.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -18,8 +19,15 @@ const OrderForm = () => {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState("");
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false); // New state for confirmation modal
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
+  const [maildata, setMaildata] = useState({
+    message: "",
+    subject: "",
+    username: "",
+  });
+  const [submitting, setSubmitting] = useState(false); // State to manage submitting status
 
   // Fetch User Profiles (for Admin)
   const fetchProfiles = async () => {
@@ -35,7 +43,7 @@ const OrderForm = () => {
   const fetchMeasurements = async (username) => {
     try {
       setLoading(true);
-      
+	  
       const response = await axios.get("http://localhost:8000/api/users/measurements/view/", {
         params: { username },
       });
@@ -68,11 +76,11 @@ const OrderForm = () => {
     }
   }, [username, role]);
 
-  // Handle Form Submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Handle Form Submission (after confirmation)
+  const handleSubmit = async () => {
+    setSubmitting(true); // Set submitting to true
     try {
-      await axios.post("http://localhost:8000/api/users/orders/new/", {
+      const orderresponse = await axios.post("http://localhost:8000/api/users/orders/new/", {
         measurements,
         comments,
         expected_date: expectedDate,
@@ -82,11 +90,37 @@ const OrderForm = () => {
         username: selectedProfile || username, // Use selected profile or current username
         client: selectedProfile || username,
       });
+                // Compose email data
+                maildata.message = `
+                <p>Dear <strong>${selectedProfile || username} </strong>,</p>
+                <p>Your Order with order number ${orderresponse.id} has been successfully booked with your number one Tailor Shop.</strong>.</p>
+                <p><strong>Expected Delivery Date:</strong> ${expectedDate}</p>
+                <p><strong>Preferred Color:</strong> ${preferredColor}</p>
+                <p><strong>Event Type:</strong> ${eventType}</p>
+                <p>Please expect to hear from us again when the status of your order changes .</p>
+                <p>Thanks for choosing <strong>JFK Tailor Shop</strong>.</p>
+                <p>Best regards,<br/>JFK Tailor Shop</p>
+                `;
+                
+                    maildata.subject = `Your Order (${orderresponse.id}) with JFK`;
+                    maildata.username = orderresponse.client;
+                
+                    setMaildata(maildata);
+                
+                    // Send notification email
+                    await axios.post(
+                        "http://localhost:8000/api/users/notifications/email",
+                        maildata
+                    );
+
       setSuccess(true);
+      setShowConfirmationModal(false); // Close the confirmation modal after submission
       resetForm(); // Clear form after successful submission
+      setSubmitting(false); // Set submitting to false
     } catch (error) {
       console.error("Error placing order:", error);
       setError("Failed to place order. Please try again.");
+      setSubmitting(false); // Set submitting to false
     }
   };
 
@@ -98,7 +132,7 @@ const OrderForm = () => {
     setMaterial(false);
     setPreferredColor("");
     setComments("");
-    setUserStats("")
+    setUserStats("");
     setClient("");
     setError("");
   };
@@ -111,6 +145,12 @@ const OrderForm = () => {
   // Modal Close
   const closeModal = () => {
     setSuccess(false);
+  };
+
+  // Handle confirmation modal before submission
+  const handleConfirmOrder = (e) => {
+    e.preventDefault(); // Prevent form submission until confirmed
+    setShowConfirmationModal(true); // Show confirmation modal
   };
 
   return (
@@ -156,7 +196,7 @@ const OrderForm = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={styles.form}>
+        <form onSubmit={handleConfirmOrder} style={styles.form}>
           <div style={styles.fieldGroup}>
             <label style={styles.label}>Measurements:</label>
             <textarea
@@ -230,7 +270,23 @@ const OrderForm = () => {
         </div>
       </div>
 
-      {/* Modal for Success Message */}
+      {/* Confirmation Modal */}
+      {showConfirmationModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h3>Confirm Order</h3>
+            <p>Are you sure you want to place this order?</p>
+            <button onClick={handleSubmit} style={styles.confirmButton} disabled={submitting}>
+                {submitting ? ("Please wait..." ) : ("Submit Order")}
+            </button>
+            <button onClick={() => setShowConfirmationModal(false)} style={styles.closeButton}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
       {success && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
@@ -354,6 +410,16 @@ const styles = {
     textAlign: "center",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
   },
+  confirmButton: {
+    padding: "10px 20px",
+    fontSize: "1rem",
+    color: "#fff",
+    backgroundColor: "#28a745",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginRight: "10px",
+  },
   closeButton: {
     padding: "10px 20px",
     fontSize: "1rem",
@@ -362,7 +428,7 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-    marginTop: "20px",
+					  
   },
   errorMessage: {
     color: "red",

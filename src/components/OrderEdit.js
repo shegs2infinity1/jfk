@@ -1,21 +1,44 @@
-// OrderEdit.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import '../styles/OrderEdit.css'; // Extracted styles to a separate file
 
 const OrderEdit = () => {
     const { orderId } = useParams();
-    const [measurements, setMeasurements] = useState('');
-    const [comments, setComments] = useState('');
     const navigate = useNavigate();
+
+    const [orderData, setOrderData] = useState({
+        measurements: '',
+        comments: '',
+        expectedDate: '',
+        eventType: '',
+        material: false,
+        preferredColor: '',
+        client: '',
+        order_date:'',
+    });
+
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchOrderDetails = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/api/users/orders/${orderId}/`);
-                setMeasurements(response.data.measurements);
-                setComments(response.data.comments);
+                const response = await axios.get(`http://localhost:8000/api/users/orders/view/${orderId}/`);
+                const { measurements, comments, expected_date, event_type, material, preferred_Color, client, order_date } = response.data;
+
+                setOrderData({
+                    measurements,
+                    comments,
+                    expectedDate: expected_date,
+                    eventType: event_type,
+                    material,
+                    preferredColor: preferred_Color,
+                    client,
+                    order_date,
+                });
+                
             } catch (error) {
+                setErrorMessage('Error fetching order details. Please try again later.');
                 console.error('Error fetching order details:', error);
             }
         };
@@ -23,86 +46,93 @@ const OrderEdit = () => {
         fetchOrderDetails();
     }, [orderId]);
 
+    const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setOrderData((prevData) => ({
+            ...prevData,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
+    };
+    const orderdate = orderData.order_date.split('.')[0].replace('T',' ');
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
             await axios.put(`http://localhost:8000/api/users/orders/update/${orderId}/`, {
-                measurements,
-                comments,
+                measurements: orderData.measurements,
+                comments: orderData.comments,
+                expected_date: orderData.expectedDate,
+                event_type: orderData.eventType,
+                material: orderData.material,
+                preferred_Color: orderData.preferredColor,
             });
             navigate('/orders');
         } catch (error) {
+            setErrorMessage('Error updating the order. Please try again.');
             console.error('Error updating order:', error);
         }
     };
 
     return (
-        <div style={styles.container}>
-            <h2>Edit Order #{orderId}</h2>
-            <form onSubmit={handleUpdate}>
-                <label>Measurements:</label>
+        <div className="container">
+            <h2>Edit Order #{orderId} for {orderData.client}, Created on {orderdate}</h2>
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
+            <form onSubmit={handleUpdate} className="order-edit-form">
+                <label htmlFor="measurements">Measurements:</label>
                 <textarea
-                    value={measurements}
-                    onChange={(e) => setMeasurements(e.target.value)}
+                    id="measurements"
+                    name="measurements"
+                    value={orderData.measurements}
+                    onChange={handleInputChange}
                     required
                 />
-                <label>Comments:</label>
+                <label htmlFor="comments">Comments:</label>
                 <textarea
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
+                    id="comments"
+                    name="comments"
+                    value={orderData.comments}
+                    onChange={handleInputChange}
                 />
+                <label htmlFor="expectedDate">Expected Delivery Date:</label>
+                <input
+                    type="date"
+                    id="expectedDate"
+                    name="expectedDate"
+                    value={orderData.expectedDate}
+                    onChange={handleInputChange}
+                    required
+                />
+                <label htmlFor="eventType">Event Type:</label>
+                <input
+                    type="text"
+                    id="eventType"
+                    name="eventType"
+                    value={orderData.eventType}
+                    onChange={handleInputChange}
+                    required
+                />
+                <label htmlFor="material">Will We Provide Material?</label>
+                <input
+                    type="checkbox"
+                    id="material"
+                    name="material"
+                    checked={orderData.material}
+                    onChange={handleInputChange}
+                />
+                <label htmlFor="preferredColor">Preferred Color:</label>
+                <input
+                    type="text"
+                    id="preferredColor"
+                    name="preferredColor"
+                    value={orderData.preferredColor}
+                    onChange={handleInputChange}
+                />
+                <div className='button-group'>
                 <button type="submit">Update Order</button>
+                <button type="button" onClick={() => navigate(-1)} >Cancel</button>
+                </div>
             </form>
         </div>
     );
-};
-
-// Inline styles
-const styles = {
-    container: {
-        maxWidth: '600px',
-        margin: '50px auto',
-        padding: '30px',
-        borderRadius: '10px',
-        backgroundColor: '#f9f9f9',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        fontFamily: 'Arial, sans-serif',
-    },
-    heading: {
-        fontSize: '2rem',
-        marginBottom: '20px',
-        textAlign: 'center',
-        color: '#333',
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    label: {
-        marginBottom: '5px',
-        fontSize: '1rem',
-        color: '#555',
-        textAlign: 'left',
-    },
-    textarea: {
-        padding: '10px',
-        fontSize: '1rem',
-        marginBottom: '20px',
-        borderRadius: '5px',
-        border: '1px solid #ccc',
-        resize: 'vertical',
-        height: '100px',
-    },
-    button: {
-        padding: '15px',
-        fontSize: '1rem',
-        color: '#fff',
-        backgroundColor: '#007bff',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        transition: 'background-color 0.3s',
-    },
 };
 
 export default OrderEdit;

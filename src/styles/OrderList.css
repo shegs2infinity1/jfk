@@ -1,0 +1,132 @@
+.page {
+    background-image: url('../images/orderlist.webp');
+    background-size: cover;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.heading {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.orderList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.orderItem {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.actionButtons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.actionButton {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.buttonGroup {
+    margin-top: 10px;
+}
+
+.button {
+    padding: 5px 10px;
+    margin-right: 5px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modalContent {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+    text-align: center;
+}
+
+.confirmButton {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.closeButton {
+    padding: 10px 20px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.paginationContainer {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.pageItem {
+    padding: 8px 12px;
+    margin: 0 5px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #007bff;
+    border: 1px solid #ddd;
+}
+
+.activePage {
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+}
+
+.disabledPage {
+    background-color: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.noOrders {
+    text-align: center;
+    font-size: 1.2rem;
+}
