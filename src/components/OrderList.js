@@ -18,6 +18,7 @@ const OrderList = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const ordersPerPage = 5;
     const navigate = useNavigate();
+    const role =  localStorage.getItem('role')
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -115,6 +116,14 @@ const OrderList = () => {
         setShowDeleteModal(true);
     };
 
+    const handleback = () =>{
+        if (role === 'admin') {
+            navigate('/admin/dashboard');
+        } else {
+            navigate('/client-home');
+        }
+    }
+
     const pageCount = Math.ceil(orders.length / ordersPerPage);
     const offset = currentPage * ordersPerPage;
     const currentOrders = orders.slice(offset, offset + ordersPerPage);
@@ -130,8 +139,8 @@ const OrderList = () => {
                     <button onClick={() => navigate('/neworders')} className="actionButton">
                         Place a New Order
                     </button>
-                    <button onClick={() => navigate(-1)} className="actionButton">
-                        Go Back
+                    <button onClick={() => handleback()} className="actionButton">
+                        Go Back Home
                     </button>
                 </div>
                 <h2 className="heading">Your Orders</h2>
