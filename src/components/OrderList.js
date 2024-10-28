@@ -25,10 +25,12 @@ const OrderList = () => {
             try {
                 const username = localStorage.getItem('username');
                 const userRole = localStorage.getItem('role');
+                const type = localStorage.getItem('list_type');
+                console.log(type) ;
                 const url = userRole === 'admin'
                     ? 'http://localhost:8000/api/users/admin/orders'
                     : 'http://localhost:8000/api/users/orders/';
-                const params = userRole !== 'admin' ? { username } : null;
+                const params = userRole !== 'admin' ? { username } : { type };
                 const response = await axios.get(url, { params });
                 setOrders(response.data);
             } catch (error) {
@@ -76,7 +78,10 @@ const OrderList = () => {
                     order.id === selectedOrder.id ? { ...order, is_confirmed: true } : order
                 )
             );
+
+            console.log(selectedOrder.id)
             composeMailData(selectedOrder, 'confirmed');
+
             await sendNotificationEmail();
             setShowConfirmationModal(false);
         } catch (error) {
@@ -93,6 +98,7 @@ const OrderList = () => {
             setLoading(true);
             await axios.post(`http://localhost:8000/api/users/orders/delete/${selectedOrder.id}/`);
             setOrders((prevOrders) => prevOrders.filter(order => order.id !== selectedOrder.id));
+            console.log(selectedOrder.id)
             composeMailData(selectedOrder, 'deleted');
             await sendNotificationEmail();
             setShowDeleteModal(false);

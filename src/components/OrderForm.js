@@ -1,7 +1,8 @@
-//OrderForm.js
+// OrderForm.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "../styles/OrderForm.css";
 import orderFormBackground from "../images/orderform.webp";
 
 const OrderForm = () => {
@@ -19,7 +20,7 @@ const OrderForm = () => {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState("");
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false); // New state for confirmation modal
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
   const [maildata, setMaildata] = useState({
@@ -27,9 +28,8 @@ const OrderForm = () => {
     subject: "",
     username: "",
   });
-  const [submitting, setSubmitting] = useState(false); // State to manage submitting status
+  const [submitting, setSubmitting] = useState(false);
 
-  // Fetch User Profiles (for Admin)
   const fetchProfiles = async () => {
     try {
       const response = await axios.get("http://localhost:8000/api/users/userprofile");
@@ -39,11 +39,9 @@ const OrderForm = () => {
     }
   };
 
-  // Fetch User Measurements
   const fetchMeasurements = async (username) => {
     try {
       setLoading(true);
-	  
       const response = await axios.get("http://localhost:8000/api/users/measurements/view/", {
         params: { username },
       });
@@ -56,7 +54,6 @@ const OrderForm = () => {
     }
   };
 
-  // Handle Profile Change (Admin)
   const handleProfileChange = (event) => {
     resetForm();
     const username = event.target.value;
@@ -64,7 +61,6 @@ const OrderForm = () => {
     fetchMeasurements(username);
   };
 
-  // useEffect Hook
   useEffect(() => {
     if (role === "admin") {
       fetchProfiles();
@@ -76,9 +72,8 @@ const OrderForm = () => {
     }
   }, [username, role]);
 
-  // Handle Form Submission (after confirmation)
   const handleSubmit = async () => {
-    setSubmitting(true); // Set submitting to true
+    setSubmitting(true);
     try {
       const orderresponse = await axios.post("http://localhost:8000/api/users/orders/new/", {
         measurements,
@@ -87,44 +82,36 @@ const OrderForm = () => {
         event_type: eventType,
         material,
         preferred_Color: preferredColor,
-        username: selectedProfile || username, // Use selected profile or current username
+        username: selectedProfile || username,
         client: selectedProfile || username,
       });
-                // Compose email data
-                maildata.message = `
-                <p>Dear <strong>${selectedProfile || username} </strong>,</p>
-                <p>Your Order with order number ${orderresponse.id} has been successfully booked with your number one Tailor Shop.</strong>.</p>
-                <p><strong>Expected Delivery Date:</strong> ${expectedDate}</p>
-                <p><strong>Preferred Color:</strong> ${preferredColor}</p>
-                <p><strong>Event Type:</strong> ${eventType}</p>
-                <p>Please expect to hear from us again when the status of your order changes .</p>
-                <p>Thanks for choosing <strong>JFK Tailor Shop</strong>.</p>
-                <p>Best regards,<br/>JFK Tailor Shop</p>
-                `;
-                
-                    maildata.subject = `Your Order (${orderresponse.id}) with JFK`;
-                    maildata.username = orderresponse.client;
-                
-                    setMaildata(maildata);
-                
-                    // Send notification email
-                    await axios.post(
-                        "http://localhost:8000/api/users/notifications/email",
-                        maildata
-                    );
 
+      
+      maildata.message = `
+          <p>Dear <strong>${selectedProfile || username} </strong>,</p>
+          <p>Your Order with order number ${orderresponse.data.id} has been successfully booked with JFK Tailor Shop.</p>
+          <p><strong>Expected Delivery Date:</strong> ${expectedDate}</p>
+          <p><strong>Preferred Color:</strong> ${preferredColor}</p>
+          <p><strong>Event Type:</strong> ${eventType}</p>
+          <p>Thank you for choosing JFK Tailor Shop.</p>
+        `;
+      maildata.subject = `Your Order (${orderresponse.data.id}) with JFK`;
+      maildata.username = orderresponse.data.client;
+      
+      setMaildata(maildata);
+
+      await axios.post("http://localhost:8000/api/users/notifications/email", maildata);
       setSuccess(true);
-      setShowConfirmationModal(false); // Close the confirmation modal after submission
-      resetForm(); // Clear form after successful submission
-      setSubmitting(false); // Set submitting to false
+      setShowConfirmationModal(false);
+      resetForm();
     } catch (error) {
       console.error("Error placing order:", error);
       setError("Failed to place order. Please try again.");
-      setSubmitting(false); // Set submitting to false
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  // Reset Form Fields
   const resetForm = () => {
     setMeasurements("");
     setExpectedDate("");
@@ -135,34 +122,30 @@ const OrderForm = () => {
     setUserStats("");
     setClient("");
     setError("");
+    setSelectedProfile("");
   };
 
-  // Handle Navigation
   const handleBackHome = () => {
     navigate(role === "client" ? "/client-home" : "/admin/dashboard");
   };
 
-  // Modal Close
-  const closeModal = () => {
-    setSuccess(false);
-  };
+  const closeModal = () => setSuccess(false);
 
-  // Handle confirmation modal before submission
   const handleConfirmOrder = (e) => {
-    e.preventDefault(); // Prevent form submission until confirmed
-    setShowConfirmationModal(true); // Show confirmation modal
+    e.preventDefault();
+    setShowConfirmationModal(true);
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <h2 style={styles.heading}>Place a New Order for </h2>
-        {error && <p style={styles.errorMessage}>{error}</p>}
+    <div className="order-form-page" style={{ backgroundImage: `url(${orderFormBackground})` }}>
+      <div className="order-form-container">
+        <h2>Place a New Order</h2>
+        {error && <p className="error-message">{error}</p>}
 
         {role === "admin" && (
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Select Client: </label>
-            <select id="profile-dropdown" value={selectedProfile} onChange={handleProfileChange} style={styles.input}>
+          <div className="field-group">
+            <label>Select Client: </label>
+            <select value={selectedProfile} onChange={handleProfileChange} className="input">
               <option value="" disabled>Select a Client</option>
               {profiles.map((profile) => (
                 <option key={profile.id} value={profile.username}>
@@ -176,266 +159,127 @@ const OrderForm = () => {
         {loading ? (
           <p>Loading measurements...</p>
         ) : (
-          <div>
-            <table style={styles.comparisonTable}>
-              <thead>
-                <tr>
-                  <th style={styles.tableHeader}>Body Part</th>
-                  <th style={styles.tableHeader}>Current Measurement</th>
+          <table className="comparison-table">
+            <thead>
+              <tr>
+                <th>Body Part</th>
+                <th>Current Measurement</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(userStats).map((key) => (
+                <tr key={key}>
+                  <td>{key.charAt(0).toUpperCase() + key.slice(1)}</td>
+                  <td>{userStats[key]}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {Object.keys(userStats).map((key) => (
-                  <tr key={key}>
-                    <td style={styles.tableData}>{key.charAt(0).toUpperCase() + key.slice(1)}</td>
-                    <td style={styles.tableData}>{userStats[key]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
 
-        <form onSubmit={handleConfirmOrder} style={styles.form}>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Measurements:</label>
+        <form onSubmit={handleConfirmOrder} className="form">
+          <div className="field-group">
+            <label>Measurements:</label>
             <textarea
               value={measurements}
               onChange={(e) => setMeasurements(e.target.value)}
               required
-              style={styles.textarea}
-              placeholder="Enter custom measurements if different from current stats"
+              className="textarea"
+              placeholder="Enter custom measurements"
             />
           </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Comments:</label>
+          <div className="field-group">
+            <label>Comments:</label>
             <textarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}
-              style={styles.textarea}
+              className="textarea"
               placeholder="Enter any additional comments"
             />
           </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Expected Delivery Date:</label>
+          <div className="field-group">
+            <label>Expected Delivery Date:</label>
             <input
               type="date"
               value={expectedDate}
               onChange={(e) => setExpectedDate(e.target.value)}
-              style={styles.input}
+              className="input"
               required
             />
           </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Event Type:</label>
+          <div className="field-group">
+            <label>Event Type:</label>
             <input
               type="text"
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
-              style={styles.input}
+              className="input"
               required
             />
           </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Will We Provide Material?</label>
+          <div className="field-group">
+            <label>Will We Provide Material?</label>
             <input
               type="checkbox"
               checked={material}
               onChange={(e) => setMaterial(e.target.checked)}
-              style={styles.checkbox}
+              className="checkbox"
             />
           </div>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Preferred Color/Combinations:</label>
+          <div className="field-group">
+            <label>Preferred Color/Combinations:</label>
             <input
               type="text"
               value={preferredColor}
               onChange={(e) => setPreferredColor(e.target.value)}
-              style={styles.input}
+              className="input"
               placeholder="Enter preferred colors"
             />
           </div>
-          <button type="submit" style={styles.button}>
+          <button type="submit" className="button">
             Place Order
           </button>
         </form>
 
-        <div style={styles.buttonGroup}>
-          <button onClick={() => navigate("/orders")} style={styles.button}>
+        <div className="button-group">
+          <button onClick={() => navigate("/orders")} className="button">
             View Orders
           </button>
-          <button onClick={handleBackHome} style={styles.button}>
+          <button onClick={handleBackHome} className="button">
             Go to Home
           </button>
         </div>
+
+        {showConfirmationModal && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>Confirm Order</h3>
+              <p>Are you sure you want to place this order?</p>
+              <button onClick={handleSubmit} className="confirm-button" disabled={submitting}>
+                {submitting ? "Please wait..." : "Submit Order"}
+              </button>
+              <button onClick={() => setShowConfirmationModal(false)} className="close-button">
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {success && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>Success!</h3>
+              <p>Your order has been placed successfully.</p>
+              <p>You should get a notification about the order shortly.</p>
+              <button onClick={closeModal} className="close-button">
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* Confirmation Modal */}
-      {showConfirmationModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <h3>Confirm Order</h3>
-            <p>Are you sure you want to place this order?</p>
-            <button onClick={handleSubmit} style={styles.confirmButton} disabled={submitting}>
-                {submitting ? ("Please wait..." ) : ("Submit Order")}
-            </button>
-            <button onClick={() => setShowConfirmationModal(false)} style={styles.closeButton}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
-      {success && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <h3>Success!</h3>
-            <p>Your order has been placed successfully.</p>
-            <button onClick={closeModal} style={styles.closeButton}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
-};
-
-// Inline styles (refactored for simplicity and consistency)
-const styles = {
-  page: {
-    minHeight: "100vh",
-    backgroundImage: `url(${orderFormBackground})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "20px",
-  },
-  container: {
-    maxWidth: "700px",
-    width: "100%",
-    padding: "40px",
-    borderRadius: "10px",
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-    fontFamily: "Arial, sans-serif",
-  },
-  heading: {
-    fontSize: "2.2rem",
-    marginBottom: "20px",
-    textAlign: "center",
-    color: "#333",
-  },
-  comparisonTable: {
-    width: "100%",
-    margin: "20px 0",
-    borderCollapse: "collapse",
-    textAlign: "center",
-    fontSize: "1rem",
-    border: "1px solid #ccc",
-  },
-  tableHeader: {
-    backgroundColor: "#007bff",
-    color: "#fff",
-    padding: "10px",
-  },
-  tableData: {
-    padding: "10px",
-    border: "1px solid #ccc",
-  },
-  label: {
-    marginBottom: "5px",
-    fontSize: "1rem",
-    color: "#555",
-    textAlign: "left",
-  },
-  textarea: {
-    padding: "10px",
-    fontSize: "1rem",
-    marginBottom: "20px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    resize: "vertical",
-    height: "100px",
-    width: "100%",
-  },
-  input: {
-    padding: "10px",
-    fontSize: "1rem",
-    width: "100%",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-  },
-  fieldGroup: {
-    marginBottom: "20px",
-  },
-  checkbox: {
-    marginLeft: "10px",
-    transform: "scale(1.2)",
-  },
-  button: {
-    padding: "15px",
-    fontSize: "1rem",
-    color: "#fff",
-    backgroundColor: "#007bff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-    marginTop: "10px",
-  },
-  buttonGroup: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: "20px",
-  },
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    padding: "30px",
-    borderRadius: "10px",
-    textAlign: "center",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-  },
-  confirmButton: {
-    padding: "10px 20px",
-    fontSize: "1rem",
-    color: "#fff",
-    backgroundColor: "#28a745",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginRight: "10px",
-  },
-  closeButton: {
-    padding: "10px 20px",
-    fontSize: "1rem",
-    color: "#fff",
-    backgroundColor: "#007bff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-					  
-  },
-  errorMessage: {
-    color: "red",
-    fontSize: "1rem",
-    textAlign: "center",
-    marginBottom: "20px",
-  },
 };
 
 export default OrderForm;
