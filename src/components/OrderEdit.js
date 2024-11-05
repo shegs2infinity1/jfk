@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import '../styles/OrderEdit.css'; // Extracted styles to a separate file
+import "../styles/global.css"
+import '../styles/OrderEdit.css'; // Extracted styles to a separate file  
+import image from "../images/orderform.webp"; // Background image
 
 const OrderEdit = () => {
     const { orderId } = useParams();
@@ -73,7 +75,7 @@ const OrderEdit = () => {
     };
 
     return (
-        <div className="container">
+        <div className="container" style={{ backgroundImage: `url(${image})` }}>
             <h2>Edit Order #{orderId} for {orderData.client}, Created on {orderdate}</h2>
             {errorMessage && <p className="error-message">{errorMessage}</p>}
             <form onSubmit={handleUpdate} className="order-edit-form">

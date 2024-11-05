@@ -1,0 +1,58 @@
+
+.container-login {
+    max-width: 400px;
+    margin: auto;
+    padding: 40px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-family: Arial, sans-serif;
+    display: flex; /* Ensure it is flex container */
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center; /* Center align elements */
+    gap: 20px; /* Add space between elements */
+}
+
+.heading-login {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: black; 
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Add text shadow for better visibility */
+    animation: fadeInDown 1s;
+    text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.9); 
+}
+
+.input {
+    padding: 15px;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    transition: border-color 0.3s ease;
+}
+
+.input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.error {
+    color: red;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+        padding: 20px;
+    }
+    .heading {
+        font-size: 1.5rem;
+    }
+    .input, .button {
+        font-size: 0.9rem;
+    }
+}

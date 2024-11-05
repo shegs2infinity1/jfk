@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ReactPaginate from 'react-paginate';
+import image from "../images/orderlist.webp";
+import "../styles/global.css"
 import '../styles/OrderList.css'; // Import the CSS file
 
 const OrderList = () => {
@@ -139,7 +141,7 @@ const OrderList = () => {
     };
 
     return (
-        <div className="page">
+        <div className="page" style={{ backgroundImage: `url(${image})` }}>
             <div className="container">
                 <div className="actionButtons">
                     <button onClick={() => navigate('/neworders')} className="actionButton">

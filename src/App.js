@@ -2,9 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import LoginPage from "./components/LoginPage";
-import AdminPage from "./components/AdminPage";
 import SignUpPage from "./components/SignUpPage";
-import BiodataCapturePage from "./components/BiodataCapturePage";
 import ReportingPage from "./components/ReportingPage";
 import PrivateRoute from "./components/PrivateRoute"; // Import the PrivateRoute component
 import UnauthorizedPage from "./components/UnauthorizedPage"; // Optional: For unauthorized users
@@ -32,16 +30,6 @@ const App = () => (
       {/* <Route path="/login" element={<div>Biodata submitted successfully!</div>}/> */}
       <Route path="/unauthorized" element={<UnauthorizedPage />} />{" "}
       {/* Optional Unauthorized Route */}
-      <Route
-        path="/admin"
-        element={
-          <PrivateRoute role="admin">
-            <AdminPage />
-          </PrivateRoute>
-        }
-      />
-      <Route path="/biodata" element={<BiodataCapturePage />} />
-      {/* <Route path="/biodata" element={<PrivateRoute role="client"><BiodataCapturePage /></PrivateRoute>} /> */}
       <Route path="/reporting" element={<ReportingPage />} />
       {/* Success page after submission */}
       <Route

@@ -1,0 +1,117 @@
+.container-signup {
+  max-width: 800px;
+  width: 100%;
+  margin: auto;
+  padding: 40px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+  overflow-y: auto; /* Allow vertical scrolling inside the container */
+  max-height: 90vh; /* Restrict height to ensure the button stays visible */
+}
+
+.heading {
+  font-size: 2.5rem;
+  margin-bottom: 1px;
+  color: #333; /* Changed to match the overall theme */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: -10px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.label {
+  flex: 1;
+  margin-right: 10px;
+  font-size: 1rem;
+  color: #555;
+}
+
+.input {
+  flex: 2;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+/* .button {
+  padding: 10px 15px;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: calc(50% - 10px); 
+  margin: 10px 5px; 
+} */
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.backButton {
+  padding: 10px 15px;
+  font-size: 1rem;
+  color: #333;
+  background-color: #f1f1f1;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: calc(50% - 10px);
+  margin: 10px 5px; /* Ensure consistent spacing */
+  z-index: 2; /* Ensure it stays above other elements */
+}
+
+.backButton:hover {
+  background-color: #0056b3;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Add some space between the buttons */
+  width: 100%; /* Ensure the row takes up full width */
+  max-width: 400px; /* Restrict the maximum width */
+}
+
+
+.errorMessage {
+  color: red;
+  margin-top: 10px;
+}
+
+.loadingGif {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 768px) {
+  .container {
+      width: 90%;
+      padding: 20px;
+  }
+  .heading {
+      font-size: 1.5rem;
+  }
+  .input, .button, .backButton {
+      font-size: 0.9rem;
+  }
+}

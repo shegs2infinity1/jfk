@@ -177,7 +177,7 @@ const OrderForm = () => {
           </table>
         )}
 
-        <form onSubmit={handleConfirmOrder} className="form">
+        <form onSubmit={handleConfirmOrder} >
           <div className="field-group">
             <label>Measurements:</label>
             <textarea

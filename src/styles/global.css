@@ -1,4 +1,68 @@
 /* Global CSS */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-size: cover; /* Ensures the image covers the whole page */
+  background-position: center; /* Centers the image */
+  background-repeat: no-repeat; /* Prevents the image from repeating */
+  background-attachment: fixed; /* Keeps the image fixed while scrolling */
+  height: 100%;
+  /*overflow: hidden;  Prevents scrolling */
+}
+html {
+  height: 100%;
+  margin: 0;
+ /* overflow: hidden;  Prevents scrolling */
+}
+.page {
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 100vh;
+  padding: 20px;
+}
+.page::before {
+  /* content: ""; */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Add a dark overlay */
+  z-index: 0;
+}
+
+.button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #0069d9;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  flex: 1;
+  margin: 10px 5px;
+}
+
+.button:hover {
+  background-color: #004885;
+}
+.form {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; /* Center align elements */
+  gap: 20px; /* Add space between elements */
+  width: 100%;
+}
+
+
 @keyframes fadeInDown {
     from {
       opacity: 0;
